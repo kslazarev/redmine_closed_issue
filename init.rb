@@ -1,8 +1,17 @@
 require 'redmine'
 require 'dispatcher'
-require 'query_patch_closed_date'
+require 'patches/patches'
+#require 'query_patch_closed_date'
 require 'close_issue_patch'
 
+
+Dispatcher.to_prepare :redmine_issue_dependency do
+  require_dependency 'issue'
+
+  unless Issue.included_modules.include? Patches::Issue
+    Issue.send(:include, Patches::Issue)
+  end
+end
 
 Redmine::Plugin.register :redmine_redmine_close_issue do
   name 'Redmine Closed Date plugin'
@@ -14,5 +23,5 @@ Redmine::Plugin.register :redmine_redmine_close_issue do
 end
 
 Dispatcher.to_prepare do
-  Query.send(:include, IssueQueryPatch)
+  Query.send(:include, Patches::IssueQuery)
 end

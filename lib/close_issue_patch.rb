@@ -1,26 +1,27 @@
 module ClosedDateIssue
   class Hooks < Redmine::Hook::ViewListener
-    COMPLETE_PERCENT = 100
+    def controller_issues_new_before_save context
+      issue = context[:issue]
 
-    def controller_issues_new_before_save(context)
-      if context[:issue]
-        context[:issue].closed_date = Time.now if context[:issue].status.is_closed?
-        context[:issue].complete_date = Time.now if COMPLETE_PERCENT == context[:issue].done_ratio
+      if issue
+        issue.customer_task_id = issue.author_id.issues.count + 1
+        issue.closed_date = issue.status.is_closed? ? Time.now : nil
+        issue.complete_date = complete? ? Time.now : nil
       end
     end
 
-    def controller_issues_edit_before_save(context)
-      if context[:issue]
-        current_issue = Issue.find(context[:issue].id)
+    def controller_issues_edit_before_save context
+      issue = context[:issue]
 
-        unless context[:issue].status == current_issue.status
-          context[:issue].status.is_closed? ?
-            context[:issue].closed_date = Time.now : context[:issue].closed_date = nil
+      if issue
+        saved_issue = Issue.find(issue.id)
+
+        unless issue.same_status?(saved_issue)
+          issue.closed_date = issue.status.is_closed? ? Time.now : nil
         end
 
-        unless context[:issue].done_ratio == current_issue.done_ratio
-          COMPLETE_PERCENT == context[:issue].done_ratio ?
-            context[:issue].complete_date = Time.now : context[:issue].complete_date = nil
+        unless issue.same_done_ratio?(saved_issue)
+          issue.complete_date = issue.complete? ? Time.now : nil
         end
       end
     end
