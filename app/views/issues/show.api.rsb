@@ -10,6 +10,19 @@ api.issue do
   api.fixed_version(:id => @issue.fixed_version_id, :name => @issue.fixed_version.name) unless @issue.fixed_version.nil?
   api.parent(:id => @issue.parent_id) unless @issue.parent.nil?
 
+  api.translation_language(
+    :id => @issue.translation_language_id,
+    :name => @issue.translation_language.name
+  ) unless @issue.translation_language.nil?
+  api.source_language(
+    :id => @issue.source_language_id,
+    :name => @issue.source_language.name
+  ) unless @issue.source_language.nil?
+
+  #if User.current.allowed_to?(:view_attachments_prices, @project)
+
+  #end
+
   api.subject @issue.subject
   api.description @issue.description
   api.start_date @issue.start_date
@@ -33,6 +46,12 @@ api.issue do
       api.relation(:id => relation.id, :issue_id => relation.other_issue(@issue).id, :relation_type => relation.relation_type_for(@issue), :delay => relation.delay)
     end
   end if include_in_api_response?('relations') && @relations.present?
+
+  #api.array :attachments do
+  #  @attachments.each do |attachment|
+  #    api.attachment(:id => attachment.id, :issue_id => attachment.container.id, )
+  #  end
+  #end
 
   api.array :changesets do
     @issue.changesets.each do |changeset|
