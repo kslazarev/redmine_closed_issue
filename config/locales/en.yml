@@ -2,3 +2,42 @@ en:
   field_start_end_date: "Start/End"
   field_closed_date: "Closed Date"
   field_complete_date: "Complete Date"
+  translation_languages:
+     ru: 'Russian'
+     en: 'English'
+     de: 'German'
+     fr: 'French'
+     es: 'Spanish'
+     it: 'Italian'
+     ja: 'Japanese'
+     cn: 'Chinese'
+     ua: 'Ukrainian'
+     by: 'Belarus'
+     pl: 'Polish'
+     bg: 'Bulgarian'
+     az: 'Azerbaijan'
+     sa: 'Arabic'
+     am: 'Armenian'
+     hu: 'Hungarian'
+     nl: 'Dutch'
+     el: 'Greek'
+     ge: 'Georgia'
+     il: 'Hebrew'
+     kz: 'Kazakh'
+     kg: 'Kyrgyz'
+     kr: 'Korean'
+     lv: 'Latvian'
+     pt: 'Portuguese'
+     ro: 'Romanian'
+     rs: 'Serbian'
+     si: 'Slovenian'
+     tj: 'Tajik'
+     tr: 'Turkish'
+     tm: 'Turkmen'
+     fi: 'Finnish'
+     hr: 'Croatian'
+     cs: 'Czech'
+     sw: 'Swedish'
+
+
+

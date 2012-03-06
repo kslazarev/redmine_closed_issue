@@ -1,5 +1,4 @@
-#module Patches
-#end
-
-require 'patches/issue'
-require 'patches/issue_query'
+require 'patches/issue_patch'
+require 'patches/user_patch'
+require 'patches/issue_query_patch'
+require 'patches/attachment_patch'

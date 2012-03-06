@@ -1,13 +1,13 @@
-class AddCompleteTimeToIssue < ActiveRecord::Migration
+class AddPriceToIssue < ActiveRecord::Migration
   def self.up
     change_table :issues do |t|
-      t.datetime :complete_date
+      t.float :price
     end
   end
 
   def self.down
     change_table :issues do |t|
-      t.remove :complete_date
+      t.remove :price
     end
   end
 end

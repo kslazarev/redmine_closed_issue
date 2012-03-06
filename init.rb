@@ -3,13 +3,22 @@ require 'dispatcher'
 require 'patches/patches'
 #require 'query_patch_closed_date'
 require 'close_issue_patch'
+require 'redmine/default_data/language_loader'
 
 
 Dispatcher.to_prepare :redmine_issue_dependency do
   require_dependency 'issue'
 
-  unless Issue.included_modules.include? Patches::Issue
-    Issue.send(:include, Patches::Issue)
+  unless Issue.included_modules.include? Patches::IssuePatch
+    Issue.send(:include, Patches::IssuePatch)
+  end
+
+  unless User.included_modules.include? Patches::UserPatch
+    User.send(:include, Patches::UserPatch)
+  end
+
+  unless Attachment.included_modules.include? Patches::AttachmentPatch
+    Attachment.send(:include, Patches::AttachmentPatch)
   end
 end
 
@@ -20,8 +29,13 @@ Redmine::Plugin.register :redmine_redmine_close_issue do
   version '0.0.2'
   url 'http://github.com/kslazarev/redmine_closed_issue'
   author_url 'http://matheusashton.net'
+
+  permission :statistics, { :issues_statistics => [:index] }, :public => true
+  menu :project_menu, :statistics, {:controller => 'issues_statistics', :action => 'index'}, :caption => :statistics,
+    :after => :issues, :param => :project_id
 end
 
 Dispatcher.to_prepare do
-  Query.send(:include, Patches::IssueQuery)
+  Query.send(:include, Patches::IssueQueryPatch)
 end
+
