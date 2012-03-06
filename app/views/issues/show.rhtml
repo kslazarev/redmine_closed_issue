@@ -11,23 +11,33 @@
   <p class="author">
     <%= authoring @issue.created_on, @issue.author %>.
     <% if @issue.created_on != @issue.updated_on %>
-        <%= l(:label_updated_time, time_tag(@issue.updated_on)) %>.
+      <%= l(:label_updated_time, time_tag(@issue.updated_on)) %>.
     <% end %>
   </p>
 
   <table class="attributes">
     <tr>
+      <th>#:</th>
+      <td>
+        <%= @issue.id %>
+      </td>
+      <th><%= l(:id_for_customer) %>:</th>
+      <td>
+        <%= @issue.author.issues.index(@issue) + 1 %>
+      </td>
+    </tr>
+    <tr>
       <th class="status"><%= l(:field_status) %>:</th>
       <td class="status"><%= @issue.status.name %></td>
       <% if @issue.complete_date %>
-          <th class="start-date"><%= l(:field_start_end_date) %>:</th>
-          <td class="start-date">
-            <%= format_date(@issue.start_date) %> - <%= format_date(@issue.complete_date) %>
-            <%= "(#{format_date(@issue.closed_date)})" if @issue.closed_date %>
-          </td>
+        <th class="start-date"><%= l(:field_start_end_date) %>:</th>
+        <td class="start-date">
+          <%= format_date(@issue.start_date) %> - <%= format_date(@issue.complete_date) %>
+          <%= "(#{format_date(@issue.closed_date)})" if @issue.closed_date %>
+        </td>
       <% else %>
-          <th class="start-date"><%= l(:field_start_date) %>:</th>
-          <td class="start-date"><%= format_date(@issue.start_date) %></td>
+        <th class="start-date"><%= l(:field_start_date) %>:</th>
+        <td class="start-date"><%= format_date(@issue.start_date) %></td>
       <% end %>
     </tr>
     <tr>
@@ -46,73 +56,166 @@
       <th class="category"><%= l(:field_category) %>:</th>
       <td class="category"><%= h @issue.category ? @issue.category.name : "-" %></td>
       <% if User.current.allowed_to?(:view_time_entries, @project) %>
-          <th class="spent-time"><%= l(:label_spent_time) %>:</th>
-          <td class="spent-time"><%= @issue.spent_hours > 0 ? (link_to l_hours(@issue.spent_hours), {:controller => 'timelog', :action => 'index', :project_id => @project, :issue_id => @issue}) : "-" %></td>
+        <th class="spent-time"><%= l(:label_spent_time) %>:</th>
+        <td class="spent-time"><%= @issue.spent_hours > 0 ? (link_to l_hours(@issue.spent_hours), {:controller => 'timelog', :action => 'index', :project_id => @project, :issue_id => @issue}) : "-" %></td>
       <% end %>
     </tr>
     <tr>
       <th class="fixed-version"><%= l(:field_fixed_version) %>:</th>
       <td class="fixed-version"><%= @issue.fixed_version ? link_to_version(@issue.fixed_version) : "-" %></td>
       <% if @issue.estimated_hours %>
-          <th class="estimated-hours"><%= l(:field_estimated_hours) %>:</th>
-          <td class="estimated-hours"><%= l_hours(@issue.estimated_hours) %></td>
+        <th class="estimated-hours"><%= l(:field_estimated_hours) %>:</th>
+        <td class="estimated-hours"><%= l_hours(@issue.estimated_hours) %></td>
       <% end %>
     </tr>
 
+
     <%= render_custom_fields_rows(@issue) %>
+
+
     <%= call_hook(:view_issues_show_details_bottom, :issue => @issue) %>
+
+    <tr>
+      <th><%= l(:field_translation_language) %></th>
+      <td><%= @issue.translation_language.try(:name) || '-' %></td>
+      <th><%= l(:field_source_language) %></th>
+      <td><%= @issue.source_language.try(:name) || '-' %></td>
+    </tr>
   </table>
 
   <% if @issue.description? || @issue.attachments.any? -%>
-      <hr/>
-      <% if @issue.description? %>
-          <div class="contextual">
-            <%= link_to_remote_if_authorized(l(:button_quote), {:url => {:controller => 'journals', :action => 'new', :id => @issue}}, :class => 'icon icon-comment') %>
-          </div>
+    <hr/>
+    <% if @issue.description? %>
+      <div class="contextual">
+        <%= link_to_remote_if_authorized(l(:button_quote), {:url => {:controller => 'journals', :action => 'new', :id => @issue}}, :class => 'icon icon-comment') %>
+      </div>
 
-          <p><strong><%= l(:field_description) %></strong></p>
+      <p><strong><%= l(:field_description) %></strong></p>
 
-          <div class="wiki">
-            <%= textilizable @issue, :description, :attachments => @issue.attachments %>
-          </div>
+      <div class="wiki">
+        <%= textilizable @issue, :description, :attachments => @issue.attachments %>
+      </div>
+    <% end %>
+    <%= link_to_attachments @issue %>
+
+
+    <% @issue.attachments.each do |attachment| %>
+      <% if attachment.translation.present? %>
+        <% field_set_tag attachment.filename, {:style => 'margin:7px; color:green'} do %>
+          <h3><%= l('attachments.translation') %></h3>
+          <table style="text-align: center">
+            <tr>
+              <th><%= l('attachments.field_volume') %></th>
+              <th><%= l('attachments.field_rate') %></th>
+              <th><%= l('attachments.field_price') %></th>
+            </tr>
+            <tr>
+              <td><%= attachment.translation.volume %></td>
+              <td><%= attachment.translation.rate %></td>
+              <td><%= attachment.translation.price %></td>
+            </tr>
+          </table>
+
+          <% if attachment.translation.repeats.any? %>
+          <span style='color:red;font-weight: bold'>
+            <%= l('attachments.calculation_repeat') %>
+          </span>
+            <table style='text-align: center'>
+              <tr>
+                <th>
+                  %
+                </th>
+                <th>
+                  <%= l('attachments.field_volume') %>
+                </th>
+                <th>
+                  <%= l('attachments.field_rate') %>
+                </th>
+                <th>
+                  <%= l('attachments.field_price') %>
+                </th>
+              </tr>
+              <% attachment.translation.repeats.each_with_index do |repeat, index| %>
+                <tr>
+                  <td>
+                    <%= Repeat::TYPES[index] %>
+                  </td>
+                  <td>
+                    <%= repeat.volume || 0.0 %>
+                  </td>
+                  <td>
+                    <%= repeat.rate || 0.0 %>
+                  </td>
+                  <td>
+                    <%= repeat.price || 0.0 %>
+                  </td>
+                </tr>
+              <% end %>
+            </table>
+          <% end %>
+
+          <h3><%= l('attachments.layout') %></h3>
+          <% if attachment.layout.present? %>
+            <table style="text-align: center">
+              <tr>
+                <th><%= l('attachments.field_layout_volume') %></th>
+                <th><%= l('attachments.field_layout_rate') %></th>
+                <th><%= l('attachments.field_layout_price') %></th>
+              </tr>
+              <tr>
+                <td><%= attachment.layout.volume || 0 %></td>
+                <td><%= attachment.layout.rate || 0 %></td>
+                <td><%= attachment.layout.price || 0 %></td>
+              </tr>
+            </table>
+          <% end %>
+
+          <% if attachment.price.present? %>
+            <h3><%= l('attachments.general') %></h3>
+            <span style='font-weight: bold;'><%= l('attachments.field_general_price') %>:</span>
+            <%= attachment.price %>
+          <% end %>
+        <% end %>
       <% end %>
-      <%= link_to_attachments @issue %>
+    <% end %>
   <% end -%>
+
+
 
   <%= call_hook(:view_issues_show_description_bottom, :issue => @issue) %>
 
   <% if !@issue.leaf? || User.current.allowed_to?(:manage_subtasks, @project) %>
-      <hr/>
-      <div id="issue_tree">
-        <div class="contextual">
-          <%= link_to(l(:button_add), {:controller => 'issues', :action => 'new', :project_id => @project, :issue => {:parent_issue_id => @issue}}) if User.current.allowed_to?(:manage_subtasks, @project) %>
-        </div>
-        <p><strong><%= l(:label_subtask_plural) %></strong></p>
-        <%= render_descendants_tree(@issue) unless @issue.leaf? %>
+    <hr/>
+    <div id="issue_tree">
+      <div class="contextual">
+        <%= link_to(l(:button_add), {:controller => 'issues', :action => 'new', :project_id => @project, :issue => {:parent_issue_id => @issue}}) if User.current.allowed_to?(:manage_subtasks, @project) %>
       </div>
+      <p><strong><%= l(:label_subtask_plural) %></strong></p>
+      <%= render_descendants_tree(@issue) unless @issue.leaf? %>
+    </div>
   <% end %>
 
   <% if authorize_for('issue_relations', 'new') || @issue.relations.present? %>
-      <hr/>
-      <div id="relations">
-        <%= render :partial => 'relations' %>
-      </div>
+    <hr/>
+    <div id="relations">
+      <%= render :partial => 'relations' %>
+    </div>
   <% end %>
 
 </div>
 
 <% if @changesets.present? %>
-    <div id="issue-changesets">
-      <h3><%= l(:label_associated_revisions) %></h3>
-      <%= render :partial => 'changesets', :locals => {:changesets => @changesets} %>
-    </div>
+  <div id="issue-changesets">
+    <h3><%= l(:label_associated_revisions) %></h3>
+    <%= render :partial => 'changesets', :locals => {:changesets => @changesets} %>
+  </div>
 <% end %>
 
 <% if @journals.present? %>
-    <div id="history">
-      <h3><%= l(:label_history) %></h3>
-      <%= render :partial => 'history', :locals => {:issue => @issue, :journals => @journals} %>
-    </div>
+  <div id="history">
+    <h3><%= l(:label_history) %></h3>
+    <%= render :partial => 'history', :locals => {:issue => @issue, :journals => @journals} %>
+  </div>
 <% end %>
 
 
@@ -121,36 +224,36 @@
 
 <div style="clear: both;"></div>
 <% if authorize_for('issues', 'edit') %>
-    <div id="update" style="display:none;">
-      <h3><%= l(:button_update) %></h3>
-      <%= render :partial => 'edit' %>
-    </div>
+  <div id="update" style="display:none;">
+    <h3><%= l(:button_update) %></h3>
+    <%= render :partial => 'edit' %>
+  </div>
 <% end %>
 
 <% other_formats_links do |f| %>
-    <%= f.link_to 'Atom', :url => {:key => User.current.rss_key} %>
-    <%= f.link_to 'PDF' %>
+  <%= f.link_to 'Atom', :url => {:key => User.current.rss_key} %>
+  <%= f.link_to 'PDF' %>
 <% end %>
 
 <% html_title "#{@issue.tracker.name} ##{@issue.id}: #{@issue.subject}" %>
 
 <% content_for :sidebar do %>
-    <%= render :partial => 'issues/sidebar' %>
+  <%= render :partial => 'issues/sidebar' %>
 
-    <% if User.current.allowed_to?(:add_issue_watchers, @project) ||
-            (@issue.watchers.present? && User.current.allowed_to?(:view_issue_watchers, @project)) %>
-        <div id="watchers">
-          <%= render :partial => 'watchers/watchers', :locals => {:watched => @issue} %>
-        </div>
-    <% end %>
+  <% if User.current.allowed_to?(:add_issue_watchers, @project) ||
+    (@issue.watchers.present? && User.current.allowed_to?(:view_issue_watchers, @project)) %>
+    <div id="watchers">
+      <%= render :partial => 'watchers/watchers', :locals => {:watched => @issue} %>
+    </div>
+  <% end %>
 <% end %>
 
 <% content_for :header_tags do %>
-    <%= auto_discovery_link_tag(:atom, {:format => 'atom', :key => User.current.rss_key}, :title => "#{@issue.project} - #{@issue.tracker} ##{@issue.id}: #{@issue.subject}") %>
-    <%= stylesheet_link_tag 'scm' %>
-    <%= javascript_include_tag 'context_menu' %>
-    <%= stylesheet_link_tag 'context_menu' %>
-    <%= stylesheet_link_tag 'context_menu_rtl' if l(:direction) == 'rtl' %>
+  <%= auto_discovery_link_tag(:atom, {:format => 'atom', :key => User.current.rss_key}, :title => "#{@issue.project} - #{@issue.tracker} ##{@issue.id}: #{@issue.subject}") %>
+  <%= stylesheet_link_tag 'scm' %>
+  <%= javascript_include_tag 'context_menu' %>
+  <%= stylesheet_link_tag 'context_menu' %>
+  <%= stylesheet_link_tag 'context_menu_rtl' if l(:direction) == 'rtl' %>
 <% end %>
 <div id="context-menu" style="display: none;"></div>
 <%= javascript_tag "new ContextMenu('#{issues_context_menu_path}')" %>
