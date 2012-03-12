@@ -1,4 +1,8 @@
 ru:
+  link_to_destroy_description: 'Удалить описание'
+  question_destroy_description: 'Вы действительно хотите удалить "Описание"?'
+  link_to_destroy_history: 'Удалить историю'
+  question_destroy_history: 'Вы действительно хотите удалить "История"?'
   field_start_end_date: 'Начало/Конец'
   field_closed_date: 'Дата закрытия'
   field_complete_date: 'Дата завершения'

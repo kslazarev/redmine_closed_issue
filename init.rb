@@ -35,7 +35,11 @@ Redmine::Plugin.register :redmine_redmine_close_issue do
   author_url 'http://matheusashton.net'
 
   #permission :view_translation_statistics, {}
-  permission :view_translation_statistics, { :issues_statistics => [:index], :issues_parent => [:index] }
+  permission :view_translation_statistics, {
+      :issues_statistics => [:index],
+      :issues_parent => [:index],
+      :issues => [:destroy_description, :destroy_journals]
+  }
 
   menu :project_menu, :statistics, {:controller => 'issues_statistics', :action => 'index'}, :caption => :statistics,
     :after => :issues, :param => :project_id
