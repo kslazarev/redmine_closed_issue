@@ -6,7 +6,7 @@ require 'close_issue_patch'
 require 'redmine/default_data/language_loader'
 
 
-Dispatcher.to_prepare :redmine_issue_dependency do
+Dispatcher.to_prepare :redmine_issue_active_dependency do
   require_dependency 'issue'
 
   unless Issue.included_modules.include? Patches::IssuePatch
