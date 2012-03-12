@@ -23,13 +23,15 @@ module Patches
             call_hook(:controller_issues_move_before_save, {:params => params, :issue => issue, :target_project => @target_project, :copy => !!@copy})
             if r = issue.move_to_project(@target_project, new_tracker, {:copy => @copy, :attributes => extract_changed_attributes_for_move(params)})
               r.attachments = issue.attachments.map do |attachment|
-                result = attachment.clone
-                result.translation = attachment.translation.clone
-                result.translation.repeats = []
-                attachment.translation.repeats.each do |repeat|
-                  result.translation.repeats << repeat.clone
+                result = attachment.try(:clone)
+                result.translation = attachment.translation.try(:clone)
+                if result.translation
+                  result.translation.repeats = []
+                  attachment.translation.repeats.each do |repeat|
+                    result.translation.repeats << repeat.clone
+                  end
                 end
-                result.layout = attachment.layout.clone
+                result.layout = attachment.layout.try(:clone)
                 result
               end
               r.save
