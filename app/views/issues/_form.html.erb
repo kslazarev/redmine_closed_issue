@@ -15,9 +15,9 @@
 
   <p><%= f.text_field :subject, :size => 80, :required => true %></p>
 
-  <p><%= f.select :translation_language_id, Language.all.collect { |l| [l.name, l.id] }, {:selected => Language.first.id + 1} %></p>
-
   <p><%= f.select :source_language_id, Language.all.collect { |l| [l.name, l.id] } %></p>
+
+  <p><%= f.select :translation_language_id, Language.all.collect { |l| [l.name, l.id] }, {:selected => Language.first.id + 1} %></p>
 
   <p><%= f.text_area :description,
     :cols => 60,
