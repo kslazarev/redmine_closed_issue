@@ -19,15 +19,35 @@ module ClosedDateIssue
 
       if issue
         params[:attachments].each do |key, value|
-          attachment = issue.attachments[key.to_i - 1]
-          if params[:calculation].try(:[], key).present?
-            add_repeat_calculation(attachment, value)
-          else
-            add_simple_calculation(attachment, value)
+          if value[:volume].present?
+            attachment = issue.attachments[key.to_i - 1]
+            if params[:calculation].try(:[], key).present?
+              add_repeat_calculation(attachment, value)
+            else
+              add_simple_calculation(attachment, value)
+            end
+            add_layout_calculation(attachment, value)
+            attachment.description = value[:description]
+            attachment.price = attachment.translation.price + attachment.layout.price
+            attachment.volume = attachment.translation.volume + attachment.layout.volume
+            attachment.save
           end
-          add_layout_calculation(attachment, value)
-          attachment.price = attachment.translation.price + attachment.layout.price
-          attachment.save
+        end
+
+        if params[:issue][:parent_issue_id].present?
+          parent = Issue.find(params[:issue][:parent_issue_id])
+          children = parent.children + [issue]
+
+          parent_volume = parent.attachments_volumes
+          parent_price = parent.attachments_prices
+
+          children_volume = children.map(&:attachments_volumes).sum
+          children_price = children.map(&:attachments_prices).sum
+
+          balance = parent.balance || parent.build_balance
+          balance.volume = parent_volume - children_volume
+          balance.price = parent_price - children_price
+          balance.save
         end
       end
     end
@@ -54,6 +74,55 @@ module ClosedDateIssue
         unless issue.same_source_language?(saved_issue)
           issue.source_language_id = params[:issue][:source_language_id]
         end
+
+        params[:attachments].each do |key, value|
+          if value[:volume].present?
+            attachment = issue.attachments[key.to_i - 1]
+            if params[:calculation].try(:[], key).present?
+              add_repeat_calculation(attachment, value)
+            else
+              add_simple_calculation(attachment, value)
+            end
+            add_layout_calculation(attachment, value)
+            attachment.description = value[:description]
+            attachment.price = attachment.translation.price + attachment.layout.price
+            attachment.volume = attachment.translation.volume + attachment.layout.volume
+            attachment.save
+          end
+        end
+
+        params[:issue][:parent_issue_id] = '0' unless params[:issue][:parent_issue_id].present?
+        unless params[:issue][:parent_issue_id].to_i == saved_issue.parent_id.to_i
+          unless params[:issue][:parent_issue_id] == '0'
+            parent = Issue.find(params[:issue][:parent_issue_id])
+            children = parent.children + [issue]
+
+            parent_volume = parent.attachments_volumes
+            parent_price = parent.attachments_prices
+
+            children_volume = children.map(&:attachments_volumes).sum
+            children_price = children.map(&:attachments_prices).sum
+
+            balance = parent.balance || parent.build_balance
+            balance.volume = parent_volume - children_volume
+            balance.price = parent_price - children_price
+            balance.save
+          else
+            parent = Issue.find(issue.parent_id)
+            children = parent.children - [issue]
+
+            parent_volume = parent.attachments_volumes
+            parent_price = parent.attachments_prices
+
+            children_volume = children.empty? ? 0 : children.map(&:attachments_volumes).sum
+            children_price = children.empty? ? 0 : children.map(&:attachments_prices).sum
+
+            balance = parent.balance || parent.build_balance
+            balance.volume = parent_volume - children_volume
+            balance.price = parent_price - children_price
+            balance.save
+          end
+        end
       end
     end
 
@@ -64,8 +133,8 @@ module ClosedDateIssue
     def add_simple_calculation attachment, params
       attachment.build_translation(
         :volume => params['volume'].to_f,
-        :rate => params['rate'].to_f,
-        :price => params['volume'].to_f * params['rate'].to_f
+          :rate => params['rate'].to_f,
+          :price => params['volume'].to_f * params['rate'].to_f
       )
     end
 
@@ -75,8 +144,8 @@ module ClosedDateIssue
 
       attachment.build_layout(
         :volume => layout_volume,
-        :rate => layout_rate,
-        :price => layout_volume * layout_rate
+          :rate => layout_rate,
+          :price => layout_volume * layout_rate
       )
     end
 
@@ -96,9 +165,9 @@ module ClosedDateIssue
 
         translation.repeats.build(
           :percent_type => index,
-          :volume => volume,
-          :rate => rate,
-          :price => volume.to_f * rate.to_f
+            :volume => volume,
+            :rate => rate,
+            :price => volume.to_f * rate.to_f
         )
       end
 

@@ -15,10 +15,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-module CustomQueriesHelper
+module CustomParentQueriesHelper
 
   def operators_for_select(filter_type)
-    Query.operators_by_filter_type[filter_type].collect {|o| [l(Query.operators[o]), o]}
+    Query.operators_by_filter_type[filter_type].collect { |o| [l(Query.operators[o]), o] }
   end
 
   def column_header(column)
@@ -64,7 +64,7 @@ module CustomQueriesHelper
     end
   end
 
-  # Retrieve query from session[:statistics] or build a new query
+  # Retrieve query from session[:parent_statistics] or build a new query
   def retrieve_query
     if !params[:query_id].blank?
       cond = "project_id IS NULL"
@@ -72,51 +72,41 @@ module CustomQueriesHelper
       @query = Query.find(params[:query_id], :conditions => cond)
       raise ::Unauthorized unless @query.visible?
       @query.project = @project
-      session[:statistics] = {:query => {:id => @query.id, :project_id => @query.project_id}}
+      session[:parent_statistics] = {:query => {:id => @query.id, :project_id => @query.project_id}}
       sort_clear
-    elsif api_request? || params[:set_filter] || session[:statistics].nil? || session[:statistics][:query].nil? || session[:statistics][:query][:project_id] != (@project ? @project.id : nil)
+    elsif api_request? || params[:set_filter] || session[:parent_statistics].nil? || session[:parent_statistics][:query].nil? || session[:parent_statistics][:query][:project_id] != (@project ? @project.id : nil)
       # Give it a name, required to be valid
       @query = Query.new(:name => "_")
       @query.project = @project
       build_query_from_params
-      session[:statistics] = {:query => {:project_id => @query.project_id, :filters => @query.filters, :group_by => @query.group_by, :column_names => @query.column_names}}
+      session[:parent_statistics] = {:query => {:project_id => @query.project_id, :filters => @query.filters, :group_by => @query.group_by, :column_names => @query.column_names}}
     else
-      # retrieve from session[:statistics]
-      if session[:statistics]
-        @query = Query.find_by_id(session[:statistics][:query][:id]) if session[:statistics][:query][:id]
-        filters = session[:statistics][:query][:filters]
-        group_by = session[:statistics][:query][:group_by]
-        column_names = session[:statistics][:query][:column_names]
+      # retrieve from session[:parent_statistics]
+      if session[:parent_statistics]
+        @query = Query.find_by_id(session[:parent_statistics][:query][:id]) if session[:parent_statistics][:query][:id]
+        filters = session[:parent_statistics][:query][:filters]
+        group_by = session[:parent_statistics][:query][:group_by]
+        column_names = session[:parent_statistics][:query][:column_names]
       else
-        filters = nil
-        group_by = nil
+        filters = []
+        group_by = []
       end
+
 
       @query ||= Query.new(:name => "_", :filters => filters, :group_by => group_by, :column_names => column_names || default_columns)
 
+      @query.add_filters(['parent_id'], {'parent_id' => '!*'}, nil)
       @query.project = @project
     end
   end
 
   def default_columns
     [
-      :author_id_for_customer,
-      :id_for_customer,
       :translation_language,
-      :source_language,
-      :attachments_translation_volumes,
-      :attachments_translation_rates,
-      :attachments_translation_prices,
-      :attachments_layout_volumes,
-      :attachments_layout_rates,
-      :attachments_layout_prices,
-      :attachments_volumes,
-      :attachments_prices,
-      :created_on,
-      :due_date,
-      :closed_date,
-      :status,
-      :description
+        :source_language,
+        :balance_volume,
+        :balance_price,
+        :status,
     ]
   end
 

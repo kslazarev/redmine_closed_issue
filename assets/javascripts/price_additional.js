@@ -1,7 +1,32 @@
 document.observe('dom:loaded', function () {
-    $('repeat_block_1').hide();
+    var i = 1;
+    while ($$('[name="calculation[' + i + ']"]').first()) {
+        if (!($$('[name="calculation[' + i + ']"]').first().checked)) {
+            $('repeat_block_' + i).hide();
+        }
+        i++;
+    }
+
+    i = 1;
+
+    while ($$('[name="attachment_info[' + i + ']"]').first()) {
+        if (!($$('[name="attachment_info[' + i + ']"]').first().checked)) {
+            $('attachment_info_' + i).hide();
+        }
+        i++;
+    }
 });
 
+function addAttachmentInfo(sender) {
+    var name_array = sender.name.split(/[\[\]]/);
+    var name_id = name_array[1];
+
+    if (sender.checked) {
+        $("attachment_info_" + name_id).show();
+    } else {
+        $('attachment_info_' + name_id).hide();
+    }
+}
 function calculatePrice(sender) {
     var name_array = sender.name.split(/[\[\]]/);
     var name_id = name_array[1];
@@ -124,37 +149,56 @@ function updateSimple(id) {
 function addFileField() {
     var fields = $('attachments_fields');
     if (fields.childElements().length >= 10) return false;
-    fileFieldCount++;
+    fileFieldCount = fields.childElements().length + 1
     var s = document.createElement("span");
-    s.update(fields.down('span').innerHTML);
+    s.update(fields.down('span', (fileFieldCount - 2) * 3 ).innerHTML);
     s.down('input.file').name = "attachments[" + fileFieldCount + "][file]";
+    s.down('input.file').value = "";
     s.down('input.description').name = "attachments[" + fileFieldCount + "][description]";
+    s.down('input.description').value = "";
     s.down('input.volume').name = "attachments[" + fileFieldCount + "][volume]";
+    s.down('input.volume').value = "";
     s.down('input.volume').disabled = "";
     s.down('input.rate').name = "attachments[" + fileFieldCount + "][rate]";
+    s.down('input.rate').value = "";
     s.down('input.rate').disabled = "";
     s.down('input.price').name = "attachments[" + fileFieldCount + "][price]";
+    s.down('input.price').value = "";
     s.down('input.price').disabled = "disabled";
 
-    s.down('#repeat_block_1').id = 'repeat_block_' + fileFieldCount;
+    s.down('#repeat_block_' + (fileFieldCount - 1)).id = 'repeat_block_' + fileFieldCount;
+    s.down('#attachment_info_' + (fileFieldCount - 1)).id = 'attachment_info_' + fileFieldCount;
+    s.down('input.attachment_info').name = "attachment_info[" + fileFieldCount + "]";
+    s.down('input.attachment_info').value = "";
+    s.down('input.attachment_info').checked = false;
     s.down('input.calculation').name = "calculation[" + fileFieldCount + "]";
+    s.down('input.calculation').value = "";
+    s.down('input.calculation').checked = false;
 
     s.down('input.layout_volume').name = "attachments[" + fileFieldCount + "][layout][volume]";
+    s.down('input.layout_volume').value = "";
     s.down('input.layout_rate').name = "attachments[" + fileFieldCount + "][layout][rate]";
+    s.down('input.layout_rate').value = "";
     s.down('input.layout_price').name = "attachments[" + fileFieldCount + "][layout][price]";
+    s.down('input.layout_price').value = "";
 
     s.down('input.general_price').name = "attachments[" + fileFieldCount + "][general][price]";
+    s.down('input.general_price').value = "";
 
     var i = 0;
     while (i < 4) {
         i++;
         s.down('input.volume', i).name = "attachments[" + fileFieldCount + "][" + i + "][volume]";
+        s.down('input.volume', i).value = "";
         s.down('input.rate', i).name = "attachments[" + fileFieldCount + "][" + i + "][rate]";
+        s.down('input.rate', i).value = "";
         s.down('input.price', i).name = "attachments[" + fileFieldCount + "][" + i + "][price]";
+        s.down('input.price', i).value = "";
     }
     fields.appendChild(s);
     s.down('#repeat_block_' + fileFieldCount).hide();
-    fields.appendChild(document.createElement("br"));
+    s.down('#attachment_info_' + fileFieldCount).hide();
+//    fields.appendChild(document.createElement("br"));
 }
 
 function chooseCalculationSimple(sender) {
