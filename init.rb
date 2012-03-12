@@ -6,7 +6,7 @@ require 'close_issue_patch'
 require 'redmine/default_data/language_loader'
 
 
-Dispatcher.to_prepare :redmine_issue_dependency do
+Dispatcher.to_prepare :redmine_issue_active_dependency do
   require_dependency 'issue'
 
   unless Issue.included_modules.include? Patches::IssuePatch
@@ -30,7 +30,7 @@ Redmine::Plugin.register :redmine_redmine_close_issue do
   name 'Redmine Closed Date plugin'
   author 'Matheus Ashton Silva, Kirill Lazarev'
   description 'A plugin that save the date when the issue is closed (completed), and shows it on issue/show view'
-  version '0.0.4.2'
+  version '0.0.4.3'
   url 'http://github.com/kslazarev/redmine_closed_issue'
   author_url 'http://matheusashton.net'
 
