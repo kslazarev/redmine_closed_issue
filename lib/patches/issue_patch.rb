@@ -9,6 +9,7 @@ module Patches
 
         belongs_to :source_language, :class_name => 'Language', :foreign_key => 'source_language_id'
         belongs_to :translation_language, :class_name => 'Language', :foreign_key => 'translation_language_id'
+        has_one :balance, :class_name => 'IssueBalance'
       end
     end
 
@@ -36,6 +37,10 @@ module Patches
 
       def same_source_language? issue
         source_language == issue.source_language
+      end
+
+      def same_parent? issue
+        parent_id == issue.parent_id
       end
 
       def attachments_translation_volumes
@@ -92,6 +97,30 @@ module Patches
         else
           0.0
         end
+      end
+
+      def attachments_volumes
+        if attachments.any?
+          attachments.map { |attachment| attachment.try(:volume) || 0.0}.sum
+        else
+          0.0
+        end
+      end
+
+      def balance_volume
+        balance.present? ? balance.volume : 0
+      end
+
+      def balance_price
+        balance.present? ? balance.price : 0.0
+      end
+
+      def id_for_customer
+        author.issues.try(:index, self) + 1
+      end
+
+      def author_id_for_customer
+        author.id_for_customer
       end
     end
   end

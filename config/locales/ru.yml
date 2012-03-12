@@ -10,7 +10,13 @@ ru:
   field_attachments_layout_volumes: 'ОВ (стр.)'
   field_attachments_layout_rates: 'СВ (стр.)'
   field_attachments_layout_prices: 'СВ'
+  field_attachments_volumes: 'OР'
   field_attachments_prices: 'СР'
+  field_balance_volume: 'ОР (баланс)'
+  field_balance_price: 'СР (баланс)'
+  field_author_id_for_customer: 'AC#'
+  field_id_for_customer: 'ЗC#'
+  permission_view_translation_statistics: 'Статистика переводов'
   translation_languages:
     ru: 'Русский'
     en: 'Английский'
@@ -50,6 +56,8 @@ ru:
   id: '#'
   id_for_customer: '# (для заказчика)'
   statistics: 'Статистика по задачам'
+  issues_parent: 'Статистика по заказам'
+
   attachments:
     field_volume: 'Объем перевода (стр.)'
     field_rate: 'Ставка (стр.)'
@@ -63,6 +71,16 @@ ru:
     layout: 'Верстка'
     translation: 'Перевод'
     general: 'Общее'
+    attachment_info: 'Дополнительно'
+  issues_complex:
+    user: '№ Заказчика'
+    issue: '№ заказа'
+    languages: 'Языки'
+    volume: 'Количество страниц'
+    price: 'Стоимость работ'
+    tracker: 'Характер работы с документом'
+
+
 
 
 

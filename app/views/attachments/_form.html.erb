@@ -1,69 +1,87 @@
 <span id="attachments_fields">
+  <% issue.attachments.build %>
+  <% issue.attachments.each_with_index do |attachment, attachment_index| %>
   <span>
-    <%= file_field_tag 'attachments[1][file]', :size => 30, :id => nil, :class => 'file',
-      :onchange => "checkFileSize(this, #{Setting.attachment_max_size.to_i.kilobytes}, '#{escape_javascript(l(:error_attachment_too_big, :max_size => number_to_human_size(Setting.attachment_max_size.to_i.kilobytes)))}');" -%>
-    <label class="inline"><%= l(:label_optional_description) %>
-      <%= text_field_tag 'attachments[1][description]', '', :size => 60, :id => nil, :class => 'description' %>
-    </label>
-    <%= link_to_function(image_tag('delete.png'), 'removeFileField(this)', :title => (l(:button_delete))) %>
+    <% if attachment.filename.present? %>
+      <label style="color:green; font-size: 14px;padding-right: 15px"><%= attachment.filename %></label>
+      <label class="inline"><%= l(:label_optional_description) %>
+        <%= text_field_tag "attachments[#{attachment_index + 1}][description]", attachment.description, :size => 60, :id => nil, :class => 'description' %>
+      </label>
+    <% else %>
+      <%= file_field_tag "attachments[#{attachment_index + 1}][file]", :value => attachment.filename, :size => 30, :id => nil, :class => 'file',
+        :onchange => "checkFileSize(this, #{Setting.attachment_max_size.to_i.kilobytes}, '#{escape_javascript(l(:error_attachment_too_big, :max_size => number_to_human_size(Setting.attachment_max_size.to_i.kilobytes)))}');" -%>
+      <label class="inline"><%= l(:label_optional_description) %>
+        <%= text_field_tag "attachments[#{attachment_index + 1}][description]", attachment.description, :size => 60, :id => nil, :class => 'description' %>
+      </label>
+      <%= link_to_function(image_tag('delete.png'), 'removeFileField(this)', :title => (l(:button_delete))) %>
+    <% end %>
     <br/>
     <br/>
 
-    <label><%= l('attachments.field_volume') %></label>
-    <%= text_field_tag 'attachments[1][volume]', '', :size => 1, :onchange => 'calculatePrice(this)', :id => nil, :class => 'volume' %>
-
-    <label class="inline"><%= l('attachments.field_rate') %></label>
-    <%= text_field_tag 'attachments[1][rate]', '', :size => 1, :onchange => 'calculatePrice(this)', :id => nil, :class => 'rate' %>
-
-    <label class="inline"><%= l('attachments.field_price') %></label>
-    <%= text_field_tag 'attachments[1][price]', '', :size => 4, :disabled => 'disabled', :id => nil, :class => 'price' %>
-
+        <label style="color:green"><%= l('attachments.attachment_info') %></label>
+    <%= check_box_tag "attachment_info[#{attachment_index + 1}]", '1', attachment.translation.present?, :onclick => 'addAttachmentInfo(this)', :id => nil, :class => 'attachment_info' %>
     <br/>
-    <br/>
-    <label style="color:red"><%= l('attachments.calculation_repeat') %></label>
-    <%= check_box_tag 'calculation[1]', '1', false, :onclick => 'chooseCalculationRepeat(this)', :id => nil, :class => 'calculation' %>
-    <br/>
-
-    <span id="repeat_block_1">
-      <% 4.times do |index| %>
         <br/>
-        <label>
-          <%= Repeat::TYPES[index] %>
-        </label>
-        <%= text_field_tag "attachments[1][#{index + 1}][volume]", '', :size => 1, :onchange => 'calculatePrice(this)', :id => nil, :class => 'volume' %>
+    <% content_tag(:span, :id => "attachment_info_#{attachment_index + 1}") do -%>
+          <label><%= l('attachments.field_volume') %></label>
+      <%= text_field_tag "attachments[#{attachment_index + 1}][volume]", attachment.try(:translation).try(:volume), :size => 1, :onchange => 'calculatePrice(this)', :id => nil, :class => 'volume' %>
 
-        <label class="inline"><%= l('attachments.field_rate') %></label>
-        <%= text_field_tag "attachments[1][#{index + 1}][rate]", '', :size => 1, :onchange => 'calculatePrice(this)', :id => nil, :class => 'rate' %>
+      <label class="inline"><%= l('attachments.field_rate') %></label>
+      <%= text_field_tag "attachments[#{attachment_index + 1}][rate]", attachment.try(:translation).try(:rate), :size => 1, :onchange => 'calculatePrice(this)', :id => nil, :class => 'rate' %>
 
-        <label class="inline"><%= l('attachments.field_price') %></label>
-        <%= text_field_tag "attachments[1][#{index + 1}][price]", '', :size => 4, :disabled => 'disabled', :id => nil, :class => 'price' %>
-        <br/>
-      <% end %>
-    </span>
+      <label class="inline"><%= l('attachments.field_price') %></label>
+      <%= text_field_tag "attachments[#{attachment_index + 1}][price]", attachment.try(:translation).try(:price), :size => 4, :disabled => 'disabled', :id => nil, :class => 'price' %>
+
+      <br/>
+          <br/>
+
+            <label style="color:red"><%= l('attachments.calculation_repeat') %></label>
+      <%= check_box_tag "calculation[#{attachment_index + 1}]", '1', attachment.try(:translation).try(:repeats).try(:any?) || false, :onclick => 'chooseCalculationRepeat(this)', :id => nil, :class => 'calculation' %>
+      <br/>
+
+      <% content_tag(:span, :id => "repeat_block_#{attachment_index + 1}") do -%>
+              <% 4.times do |index| %>
+                <br/>
+                <label>
+                  <%= Repeat::TYPES[index] %>
+                </label>
+          <%= text_field_tag "attachments[#{attachment_index + 1}][#{index + 1}][volume]", attachment.try(:translation).try(:repeats).try(:[], index).try(:volume), :size => 1, :onchange => 'calculatePrice(this)', :id => nil, :class => 'volume' %>
+
+          <label class="inline"><%= l('attachments.field_rate') %></label>
+          <%= text_field_tag "attachments[#{attachment_index + 1}][#{index + 1}][rate]", attachment.try(:translation).try(:repeats).try(:[], index).try(:rate), :size => 1, :onchange => 'calculatePrice(this)', :id => nil, :class => 'rate' %>
+
+          <label class="inline"><%= l('attachments.field_price') %></label>
+          <%= text_field_tag "attachments[#{attachment_index + 1}][#{index + 1}][price]", attachment.try(:translation).try(:repeats).try(:[], index).try(:price), :size => 4, :disabled => 'disabled', :id => nil, :class => 'price' %>
+          <br/>
+              <% end %>
+            <% end -%>
+      <br/>
+
+          <label>
+            <%= l('attachments.field_layout_volume') %>
+          </label>
+      <%= text_field_tag "attachments[#{attachment_index + 1}][layout][volume]", attachment.try(:layout).try(:volume), :size => 1, :onchange => 'calculateLayoutPrice(this)', :id => nil, :class => 'layout_volume' %>
+      <label class='inline'>
+        <%= l('attachments.field_layout_rate') %>
+      </label>
+      <%= text_field_tag "attachments[#{attachment_index + 1}][layout][rate]", attachment.try(:layout).try(:rate), :size => 1, :onchange => 'calculateLayoutPrice(this)', :id => nil, :class => 'layout_rate' %>
+      <label class='inline'>
+        <%= l('attachments.field_layout_price') %>
+      </label>
+      <%= text_field_tag "attachments[#{attachment_index + 1}][layout][price]", attachment.try(:layout).try(:price), :size => 4, :disabled => 'disabled', :id => nil, :class => 'layout_price' %>
+      <br/>
+          <br/>
+
+          <label>
+            <%= l('attachments.field_general_price') %>
+          </label>
+      <%= text_field_tag "attachments[#{attachment_index + 1}][general][price]", attachment.try(:price), :size => 4, :disabled => 'disabled', :id => nil, :class => 'general_price' %>
+        <% end -%>
     <br/>
-
-    <label>
-      <%= l('attachments.field_layout_volume') %>
-    </label>
-    <%= text_field_tag "attachments[1][layout][volume]", '', :size => 1, :onchange => 'calculateLayoutPrice(this)', :id => nil, :class => 'layout_volume' %>
-    <label class='inline'>
-      <%= l('attachments.field_layout_rate') %>
-    </label>
-    <%= text_field_tag "attachments[1][layout][rate]", '', :size => 1, :onchange => 'calculateLayoutPrice(this)', :id => nil, :class => 'layout_rate' %>
-    <label class='inline'>
-      <%= l('attachments.field_layout_price') %>
-    </label>
-    <%= text_field_tag "attachments[1][layout][price]", '', :size => 4, :onchange => 'alert("ss")', :disabled => 'disabled', :id => nil, :class => 'layout_price' %>
-    <br/>
-    <br/>
-
-    <label>
-      <%= l('attachments.field_general_price') %>
-    </label>
-    <%= text_field_tag "attachments[1][general][price]", '', :size => 4, :disabled => 'disabled', :id => nil, :class => 'general_price' %>
-  </span>
-  <br/>
+   </span>
+  <% end %>
 </span>
 <small><%= link_to l(:label_add_another_file), '#', :onclick => 'addFileField(); return false;' %>
-  (<%= l(:label_max_size) %>: <%= number_to_human_size(Setting.attachment_max_size.to_i.kilobytes) %>)
+  (<%= l(:label_max_size) %>
+  : <%= number_to_human_size(Setting.attachment_max_size.to_i.kilobytes) %>)
 </small>

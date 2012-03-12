@@ -15,6 +15,9 @@ module Patches
     end
 
     module InstanceMethods
+      def id_for_customer
+        id
+      end
     end
   end
 end
