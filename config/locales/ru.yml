@@ -20,6 +20,7 @@ ru:
   field_balance_price: 'СР (баланс)'
   field_author_id_for_customer: 'AC#'
   field_id_for_customer: 'ЗC#'
+  enumeration_languages: 'Языки'
   permission_view_translation_statistics: 'Статистика переводов'
   translation_languages:
     ru: 'Русский'
