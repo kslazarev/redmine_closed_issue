@@ -122,6 +122,20 @@ module ClosedDateIssue
             balance.price = parent_price - children_price
             balance.save
           end
+        else
+          if parent = saved_issue.parent
+            children = parent.children
+            parent_volume = parent.attachments_volumes
+            parent_price = parent.attachments_prices
+
+            children_volume = children.map(&:attachments_volumes).sum
+            children_price = children.map(&:attachments_prices).sum
+
+            balance = parent.balance || parent.build_balance
+            balance.volume = parent_volume - children_volume
+            balance.price = parent_price - children_price
+            balance.save
+          end
         end
       end
     end
