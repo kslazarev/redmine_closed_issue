@@ -1,7 +1,7 @@
 class AddVolumeToAttachment < ActiveRecord::Migration
   def self.up
     change_table :attachments do |t|
-      t.integer :volume
+      t.float :volume
     end
   end
 

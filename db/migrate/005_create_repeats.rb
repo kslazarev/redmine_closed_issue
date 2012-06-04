@@ -2,7 +2,7 @@ class CreateRepeats < ActiveRecord::Migration
   def self.up
     create_table :repeats do |t|
       t.integer :translation_id
-      t.integer :volume
+      t.float :volume
       t.integer :percent_type
       t.float :rate
       t.float :price
