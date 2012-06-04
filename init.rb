@@ -36,10 +36,15 @@ Redmine::Plugin.register :redmine_redmine_close_issue do
 
   #permission :view_translation_statistics, {}
   permission :view_translation_statistics, {
-      :issues_statistics => [:index],
-      :issues_parent => [:index],
-      :issues => [:destroy_description, :destroy_journals]
+    :issues_statistics => [:index],
+    :issues => [:destroy_description, :destroy_journals]
   }
+
+  permission :view_translation_parent, {
+    :issues_parent => [:index],
+    :issues => [:destroy_description, :destroy_journals]
+  }
+
 
   menu :project_menu, :statistics, {:controller => 'issues_statistics', :action => 'index'}, :caption => :statistics,
     :after => :issues, :param => :project_id
