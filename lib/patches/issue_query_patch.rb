@@ -294,7 +294,7 @@ module Patches
       end
 
       def allow_view_translation_statistics?
-        if User.current.allowed_to?(:view_translation_statistics, project)
+        if User.current.allowed_to?(:view_translation_statistics, project) || User.current.allowed_to?(:view_translation_parent, project)
           yield
         end
       end

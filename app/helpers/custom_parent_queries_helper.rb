@@ -120,6 +120,6 @@ module CustomParentQueriesHelper
       end
     end
     @query.group_by = params[:group_by] || (params[:query] && params[:query][:group_by])
-    @query.column_names = params[:c] || (params[:query] && params[:query][:column_names])
+    @query.column_names = params[:c] || (params[:query] && params[:query][:column_names]) || default_columns
   end
 end

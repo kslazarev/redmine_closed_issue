@@ -237,8 +237,8 @@ function chooseCalculationRepeat(sender) {
 }
 
 function calculateGeneralPrice(id) {
-    price = parseFloat($$('[name="attachments[' + id + '][price]"]').first().value)
-    layout_price = parseFloat($$('[name="attachments[' + id + '][layout][price]"]').first().value)
+    price = parseFloat($$('[name="attachments[' + id + '][price]"]').first().value) || 0
+    layout_price = parseFloat($$('[name="attachments[' + id + '][layout][price]"]').first().value) || 0
 
     general_price = price + layout_price
 

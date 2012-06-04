@@ -21,7 +21,8 @@ ru:
   field_author_id_for_customer: 'AC#'
   field_id_for_customer: 'ЗC#'
   enumeration_languages: 'Языки'
-  permission_view_translation_statistics: 'Статистика переводов'
+  permission_view_translation_statistics: 'Статистика по задачам'
+  permission_view_translation_parent: 'Статистика по заказам'
   translation_languages:
     ru: 'Русский'
     en: 'Английский'
