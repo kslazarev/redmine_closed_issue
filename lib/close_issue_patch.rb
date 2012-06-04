@@ -19,7 +19,7 @@ module ClosedDateIssue
 
       if issue
         params[:attachments].each do |key, value|
-          if value[:volume].present?
+          if value[:volume].present? or value[:layout][:volume].present? or value['1'].present?
             attachment = issue.attachments[key.to_i - 1]
             if params[:calculation].try(:[], key).present?
               add_repeat_calculation(attachment, value)
@@ -76,7 +76,7 @@ module ClosedDateIssue
         end
 
         params[:attachments].each do |key, value|
-          if value[:volume].present?
+          if value[:volume].present? || value['1'].present?
             attachment = issue.attachments[key.to_i - 1]
             if params[:calculation].try(:[], key).present?
               add_repeat_calculation(attachment, value)
